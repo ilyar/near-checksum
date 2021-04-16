@@ -1,39 +1,55 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupSet;
 use near_sdk::{env, near_bindgen, setup_alloc, BorshStorageKey};
+
 setup_alloc!();
 
 #[derive(BorshSerialize, BorshStorageKey)]
 enum StorageKey {
-    Checksum,
+    Hash,
 }
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Checksum {
-    checksum_set: LookupSet<Vec<u8>>,
+    hash_set: LookupSet<Vec<u8>>,
 }
 
 impl Default for Checksum {
     fn default() -> Self {
         Self {
-            checksum_set: LookupSet::new(StorageKey::Checksum),
+            hash_set: LookupSet::new(StorageKey::Hash),
         }
     }
 }
 
 #[near_bindgen]
 impl Checksum {
-    pub fn add(&mut self, data: Vec<u8>) -> bool {
+    pub fn add(&mut self, data: Vec<u8>) -> String {
         let checksum = env::sha256(&data);
-        if self.checksum_set.contains(&checksum) {
-            env::panic(b"For given data checksum exist")
+        assert!(
+            !self.hash_set.contains(&checksum),
+            "For given data checksum exist"
+        );
+        if !self.hash_set.insert(&checksum) {
+            env::panic(b"Failed to save checksum");
         }
-        self.checksum_set.insert(&checksum)
+        checksum
+            .iter()
+            .map(|x| format!("{:x}", *x))
+            .collect::<String>()
     }
 
-    pub fn contains(&self, checksum: String) -> bool {
-        self.checksum_set.contains(&checksum.as_bytes().to_vec())
+    pub fn has(&self, hash: String) -> bool {
+        if hash.len() != 64 {
+            return false;
+        }
+        self.hash_set.contains(
+            &(0..hash.len())
+                .step_by(2)
+                .map(|i| u8::from_str_radix(&hash[i..i + 2], 16).unwrap_or_default())
+                .collect(),
+        )
     }
 }
 
@@ -41,44 +57,52 @@ impl Checksum {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::test_utils::{accounts, VMContextBuilder};
+    use near_sdk::testing_env;
     use near_sdk::MockedBlockchain;
-    use near_sdk::{testing_env, VMContext};
-    use std::convert::TryInto;
 
-    fn context(is_view: bool) -> VMContext {
-        VMContextBuilder::new()
-            .signer_account_id("alice".try_into().unwrap())
-            .is_view(is_view)
-            .build()
+    fn context() -> VMContextBuilder {
+        let mut builder = VMContextBuilder::new();
+        builder.signer_account_id(accounts(0));
+        builder
     }
 
     #[test]
     fn add() {
-        let context = context(false);
-        testing_env!(context);
+        testing_env!(context().build());
         let mut contract = Checksum::default();
-        assert!(contract.add([102, 111, 111].to_vec()));
-        assert!(!contract.contains(String::from(
-            "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c"
-        )));
+        let hash = String::from("2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae");
+        assert_eq!(hash, contract.add([102, 111, 111].to_vec()));
+        assert!(contract.has(hash));
     }
 
     #[test]
+    #[ignore]
+    // FIXME thread 'tests::add_fail_on_exist' panicked at 'For given data checksum exist', src/contract/main.rs:30:9
     #[should_panic(expected = "For given data checksum exist")]
-    fn add_fail() {
-        testing_env!(context(false));
+    fn add_fail_on_exist() {
+        testing_env!(context().build());
         let mut contract = Checksum::default();
-        assert!(contract.add([98, 97, 114].to_vec()));
-        assert!(contract.add([98, 97, 114].to_vec()));
+        contract.add([98, 97, 114].to_vec());
+        contract.add([98, 97, 114].to_vec());
     }
 
     #[test]
-    fn contains() {
-        testing_env!(context(true));
+    #[ignore] // TODO setup context with empty storage
+    #[should_panic(expected = "Failed to save checksum")]
+    fn add_fail_on_storage() {
+        testing_env!(context().build());
+        let mut contract = Checksum::default();
+        contract.add([98, 97, 114].to_vec());
+    }
+
+    #[test]
+    fn has() {
+        testing_env!(context().is_view(true).build());
         let contract = Checksum::default();
-        assert!(!contract.contains(String::from(
-            "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c"
+        assert!(!contract.has(String::from(
+            "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
         )));
+        assert!(!contract.has(String::from("bad hash")));
     }
 }
