@@ -1,0 +1,27 @@
+image: rust:latest
+
+default:
+  before_script:
+    - rustc --version
+    - cargo --version
+
+stages:
+  - qa
+  - build
+
+lint:
+  stage: qa
+  script:
+    - rustup component add clippy
+    - rustup component add rustfmt
+    - make lint
+
+test-unit:
+  stage: qa
+  script:
+    - make test-unit
+
+build:
+  stage: build
+  script:
+    - make build
