@@ -1,5 +1,6 @@
 clean:
-	rm -fr target
+	cargo clean
+	rm -fr build
 
 lint:
 	cargo fmt --all -- --check
@@ -8,13 +9,30 @@ lint:
 fmt:
 	cargo fmt
 
-test-unit:
+test-contract:
 	cargo test -- --nocapture
 
 qa:\
-test-unit \
+test-contract \
 lint
 
-build: clean
+rustup:
+	rustup component add clippy
+	rustup component add rustfmt
 	rustup target add wasm32-unknown-unknown
-	env 'RUSTFLAGS=-C link-arg=-s' cargo build --verbose --target wasm32-unknown-unknown --release
+
+check:
+	cargo check
+
+build/checksum.wasm:
+	env 'RUSTFLAGS=-C link-arg=-s' cargo build --target wasm32-unknown-unknown --release
+	@mkdir build
+	@mv target/wasm32-unknown-unknown/release/checksum.wasm build/checksum.wasm
+	@du -b build/checksum.wasm
+	@sha256sum build/checksum.wasm
+
+deploy-force: build/checksum.wasm
+	near dev-deploy --force --wasmFile build/checksum.wasm
+
+build:\
+build/checksum.wasm

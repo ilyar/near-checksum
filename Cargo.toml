@@ -6,9 +6,20 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 crate-type = ["cdylib", "rlib"]
+name = "checksum"
+path = "src/contract/main.rs"
+test = true
+doctest = false
+bench = false
+doc = false
+
+# [make rustup]
+# rustup component add clippy
+# rustup component add rustfmt
+# rustup target add wasm32-unknown-unknown
 
 [dependencies]
-near-sdk = "=3.1.0"
+near-sdk = "3.1.0"
 
 [profile.release]
 codegen-units = 1

@@ -1,27 +1,42 @@
 image: rust:latest
 
+cache:
+  key:
+    files:
+      - Cargo.lock
+  paths:
+    - $CARGO_HOME
+
 default:
   before_script:
     - rustc --version
     - cargo --version
+    - make rustup
+    - make check
 
 stages:
-  - qa
   - build
+  - test
 
 lint:
-  stage: qa
+  stage: build
   script:
-    - rustup component add clippy
-    - rustup component add rustfmt
     - make lint
-
-test-unit:
-  stage: qa
-  script:
-    - make test-unit
 
 build:
   stage: build
   script:
     - make build
+  artifacts:
+    paths:
+      - build
+    expire_in: 14 days
+
+test-contract:
+  stage: test
+  script:
+    - make test-contract
+  artifacts:
+    paths:
+      - target
+    expire_in: 1 days
