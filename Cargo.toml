@@ -17,6 +17,8 @@ doc = false
 # rustup component add clippy
 # rustup component add rustfmt
 # rustup target add wasm32-unknown-unknown
+[dev-dependencies]
+near-sdk-sim = "3.1.0"
 
 [dependencies]
 near-sdk = "3.1.0"

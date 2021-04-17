@@ -19,6 +19,7 @@ lint
 rustup:
 	rustup component add clippy
 	rustup component add rustfmt
+	rustup component add rust-src
 	rustup target add wasm32-unknown-unknown
 
 check:
