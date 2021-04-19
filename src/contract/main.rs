@@ -55,7 +55,7 @@ impl Checksum {
 
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
-mod tests {
+mod unit {
     use super::*;
     use near_sdk::test_utils::{accounts, VMContextBuilder};
     use near_sdk::testing_env;

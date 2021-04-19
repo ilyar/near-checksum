@@ -14,6 +14,23 @@ make build
 make clean
 ```
 
+### Run CI local
+
+Installation [act](https://github.com/nektos/act):
+```shell
+brew install act
+```
+
+Setup env vars:
+```shell
+echo "GITHUB_TOKEN=%GITHUB_TOKEN%" | tee .secrets
+```
+
+Run
+```shell
+act --help
+```
+
 ## Deploy stage
 
 ```shell
