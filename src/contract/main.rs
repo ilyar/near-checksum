@@ -77,8 +77,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    // FIXME thread 'tests::add_fail_on_exist' panicked at 'For given data checksum exist', src/contract/main.rs:30:9
     #[should_panic(expected = "For given data checksum exist")]
     fn add_fail_on_exist() {
         testing_env!(context().build());
