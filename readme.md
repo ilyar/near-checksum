@@ -8,7 +8,7 @@
 ## Develop
 
 ```shell
-make fmt
+make fix
 make qa
 make build
 make clean

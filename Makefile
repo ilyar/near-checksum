@@ -22,7 +22,7 @@ test-contract-unit:
 	cargo test --lib
 
 test:\
-test-contract-unit
+test-contract
 
 qa:\
 lint \
@@ -45,7 +45,7 @@ check:
 build/checksum.wasm:
 	cargo build --target wasm32-unknown-unknown --release
 	@mkdir build
-	@mv target/wasm32-unknown-unknown/release/checksum.wasm build/checksum.wasm
+	@mv target/wasm32-unknown-unknown/release/near_checksum.wasm build/checksum.wasm
 	@du -b build/checksum.wasm
 	@sha256sum build/checksum.wasm
 
