@@ -12,7 +12,7 @@ enum StorageKey {
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Checksum {
-    hash_set: LookupSet<Vec<u8>>,
+    hash_set: LookupSet<String>,
 }
 
 impl Default for Checksum {
@@ -26,7 +26,10 @@ impl Default for Checksum {
 #[near_bindgen]
 impl Checksum {
     pub fn add(&mut self, data: Vec<u8>) -> String {
-        let checksum = env::sha256(&data);
+        let checksum = env::sha256(&data)
+            .iter()
+            .map(|x| format!("{:x}", *x))
+            .collect::<String>();
         assert!(
             !self.hash_set.contains(&checksum),
             "For given data checksum exist"
@@ -35,21 +38,13 @@ impl Checksum {
             env::panic(b"Failed to save checksum");
         }
         checksum
-            .iter()
-            .map(|x| format!("{:x}", *x))
-            .collect::<String>()
     }
 
     pub fn has(&self, hash: String) -> bool {
         if hash.len() != 64 {
             return false;
         }
-        self.hash_set.contains(
-            &(0..hash.len())
-                .step_by(2)
-                .map(|i| u8::from_str_radix(&hash[i..i + 2], 16).unwrap_or_default())
-                .collect(),
-        )
+        self.hash_set.contains(&hash)
     }
 }
 
