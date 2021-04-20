@@ -87,10 +87,9 @@ mod unit {
     }
 
     #[test]
-    #[ignore] // TODO setup context with empty storage
     #[should_panic(expected = "Failed to save checksum")]
     fn add_fail_on_storage() {
-        testing_env!(context().build());
+        testing_env!(context().is_view(true).build());
         let mut contract = Checksum::default();
         contract.add([98, 97, 114].to_vec());
     }
