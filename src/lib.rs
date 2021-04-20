@@ -1,3 +1,6 @@
+mod util;
+
+use crate::util::to_hex;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupSet;
 use near_sdk::{env, near_bindgen, setup_alloc, BorshStorageKey};
@@ -27,10 +30,7 @@ impl Default for Checksum {
 impl Checksum {
     pub fn add(&mut self, data: Vec<u8>) -> String {
         assert!(!data.is_empty(), "Given empty data");
-        let checksum = env::sha256(&data)
-            .iter()
-            .map(|x| format!("{:x}", *x))
-            .collect::<String>();
+        let checksum = to_hex(&env::sha256(&data));
         assert!(
             !self.hash_set.contains(&checksum),
             "For given data checksum exist"
