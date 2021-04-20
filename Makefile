@@ -15,8 +15,12 @@ audit-fix:
 audit:
 	cargo audit
 
-test-contract: build/checksum.wasm
-	cargo test --all
+test-contract:\
+test-contract-integration \
+test-contract-unit
+
+test-contract-integration: build/checksum.wasm
+	cargo test --test integration
 
 test-contract-unit:
 	cargo test --lib
