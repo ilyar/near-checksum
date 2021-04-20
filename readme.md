@@ -38,7 +38,6 @@ make deploy-force
 accountId=ilyar.testnet
 contractName=$(cat neardev/dev-account)
 near state $contractName
-near call $contractName new --accountId $accountId
 near delete $contractName $accountId
 ```
 
@@ -50,7 +49,7 @@ make build
 accountId=ilyar.testnet
 contractName="checksum.$accountId"
 near create-account --masterAccount $accountId $contractName 
-near deploy --wasmFile build/checksum.wasm --accountId $contractName --initFunction new --initArgs '{}'
+near deploy --wasmFile build/checksum.wasm --accountId $contractName
 ```
 
 ## Usage
