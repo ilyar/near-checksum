@@ -1438,6 +1438,7 @@ checksum = "0debeb9fcf88823ea64d64e4a815ab1643f33127d995978e099942ce38f25238"
 name = "near-checksum"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "near-sdk",
  "near-sdk-sim",
  "rand 0.8.3",

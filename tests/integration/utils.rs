@@ -2,6 +2,7 @@ near_sdk_sim::lazy_static_include::lazy_static_include_bytes! {
     CONTRACT_WASM_BYTES => "build/checksum.wasm",
 }
 
+use near_sdk::Gas;
 use near_sdk_sim::init_simulator;
 use near_sdk_sim::to_yocto;
 use near_sdk_sim::UserAccount;
@@ -32,4 +33,16 @@ pub fn init() -> (UserAccount, UserAccount, UserAccount) {
     );
 
     (root, contract, alice)
+}
+
+pub fn to_gas(tera_gas: &str) -> Gas {
+    let part: Vec<_> = tera_gas.split('.').collect();
+    let number = part[0].parse::<Gas>().unwrap() * u64::pow(10, 12);
+    if part.len() > 1 {
+        let power = part[1].len() as u32;
+        let mantissa = part[1].parse::<Gas>().unwrap() * u64::pow(10, 12 - power);
+        number + mantissa
+    } else {
+        number
+    }
 }
