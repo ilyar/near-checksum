@@ -26,6 +26,7 @@ impl Default for Checksum {
 #[near_bindgen]
 impl Checksum {
     pub fn add(&mut self, data: Vec<u8>) -> String {
+        assert!(!data.is_empty(), "Given empty data");
         let checksum = env::sha256(&data)
             .iter()
             .map(|x| format!("{:x}", *x))
@@ -60,6 +61,14 @@ mod unit {
         let mut builder = VMContextBuilder::new();
         builder.signer_account_id(accounts(0));
         builder
+    }
+
+    #[test]
+    #[should_panic(expected = "Given empty data")]
+    fn add_empty() {
+        testing_env!(context().build());
+        let mut contract = Checksum::default();
+        contract.add([].to_vec());
     }
 
     #[test]
